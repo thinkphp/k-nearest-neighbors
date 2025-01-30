@@ -1,36 +1,110 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# K-Nearest-Neighbors Classification
 
-## Getting Started
+An interactive React component that demonstrates K-Nearest Neighbors (KNN) classification algorithm through a visual interface. Users can create a classification dataset and see real-time predictions based on the KNN algorithm.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Interactive point placement for two different classes
+- Adjustable K value (number of neighbors) using a slider
+- Real-time prediction visualization
+- Clear all functionality to reset the demo
+- Shift-click functionality for prediction points
+- Visual feedback with color-coded classes
+
+## Installation
+
+1. Ensure you have the required dependencies:
+   ```bash
+   npm install @/components/ui/card @/components/ui/button @/components/ui/slider
+   ```
+
+2. Import the component into your React application:
+   ```jsx
+   import KNNDemo from './path/to/KNNDemo';
+   ```
+
+## Usage
+
+```jsx
+function App() {
+  return (
+    <div>
+      <KNNDemo />
+    </div>
+  );
+}
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## How it Works
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Core Features
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. **Training Points**
+   - Click anywhere on the canvas to add training points
+   - Toggle between Class A (red) and Class B (green) using the buttons
+   - Points are stored with their x, y coordinates and class label
 
-## Learn More
+2. **Prediction**
+   - Hold Shift and click to place a prediction point
+   - The algorithm finds K nearest neighbors
+   - Classification is determined by majority vote among neighbors
 
-To learn more about Next.js, take a look at the following resources:
+3. **K Value Adjustment**
+   - Use the slider to adjust the number of neighbors (K)
+   - K values are restricted to odd numbers (1-9) to avoid ties
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Algorithm Implementation
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The KNN algorithm is implemented through these key functions:
 
-## Deploy on Vercel
+1. **Distance Calculation**
+   ```javascript
+   const distance = (p1, p2) => {
+     return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
+   };
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+2. **Prediction Logic**
+   ```javascript
+   const predict = (point) => {
+     // Get K nearest neighbors
+     const neighbors = points
+       .map(p => ({...p, distance: distance(p, point)}))
+       .sort((a, b) => a.distance - b.distance)
+       .slice(0, k);
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+     // Count votes and return majority class
+     const votes = neighbors.reduce((acc, p) => {
+       acc[p.class] = (acc[p.class] || 0) + 1;
+       return acc;
+     }, {});
+
+     return Object.entries(votes).reduce((a, b) =>
+       (votes[a] > votes[b]) ? a : b
+     )[0];
+   };
+   ```
+
+## Styling
+
+The component uses Tailwind CSS classes and custom styling for visual elements:
+- Card layout for clean presentation
+- Color-coded points (red for Class A, green for Class B)
+- White prediction point with colored border based on classification
+- Responsive canvas size (600x400 pixels)
+
+## Props
+
+The component currently doesn't accept any props but could be extended to support:
+- Custom canvas dimensions
+- Different color schemes
+- Custom number of classes
+- Initial dataset
+
+## Contributing
+
+Feel free to submit issues and enhancement requests!
+
+## License
+
+MIT
